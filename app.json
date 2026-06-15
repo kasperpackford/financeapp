@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "FinanceApp",
+    "slug": "financeapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f0f"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f0f"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "name": "Finance Tracker",
+      "shortName": "Finance",
+      "description": "Track subscriptions, bills, budgets, savings goals and TFSA growth",
+      "themeColor": "#0f0f0f",
+      "backgroundColor": "#0f0f0f",
+      "display": "standalone",
+      "orientation": "portrait",
+      "lang": "en-CA",
+      "scope": "/",
+      "startUrl": "/"
+    }
+  }
+}
