@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { colors } from './src/theme';
 import DashboardScreen from './src/screens/DashboardScreen';
@@ -54,16 +54,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   );
 }
 
-// Extracted so it can call useSafeAreaInsets (must be inside SafeAreaProvider).
 function AppNavigator() {
-  const insets = useSafeAreaInsets();
-  // We set an explicit tab bar height so the icon+label content always has
-  // exactly 40pt of space regardless of the safe-area inset.
-  //   60pt base  =  10 (paddingTop) + 40 (icon 22 + gap 2 + label 14 + 2 buffer)
-  //   + insets.bottom  (home indicator — 34pt on modern iPhones, 0 on flat-bottom)
-  const tabBarHeight = 60 + insets.bottom;
-  const tabBarPaddingBottom = 10 + insets.bottom;
-
   return (
     <Tab.Navigator
       screenOptions={{
@@ -72,9 +63,7 @@ function AppNavigator() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: tabBarHeight,
-          paddingTop: 10,
-          paddingBottom: tabBarPaddingBottom,
+          paddingTop: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
