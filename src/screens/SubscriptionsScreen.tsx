@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { Subscription } from '../types';
 import SubscriptionCard from '../components/SubscriptionCard';
@@ -38,7 +39,8 @@ const DEFAULT_FORM = {
 };
 
 export default function SubscriptionsScreen() {
-  const { data: subscriptions, save } = useAsyncStorage<Subscription[]>('subscriptions', []);
+  const { data: subscriptions, save, reload } = useAsyncStorage<Subscription[]>('subscriptions', []);
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
   const [form, setForm] = useState(DEFAULT_FORM);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { SavingsGoal } from '../types';
 import GoalCard from '../components/GoalCard';
@@ -31,7 +32,8 @@ const DEFAULT_FORM = {
 type ModalMode = 'add' | 'edit';
 
 export default function GoalsScreen() {
-  const { data: goals, save } = useAsyncStorage<SavingsGoal[]>('savingsGoals', []);
+  const { data: goals, save, reload } = useAsyncStorage<SavingsGoal[]>('savingsGoals', []);
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
   const [modalVisible, setModalVisible] = useState(false);
   const [mode, setMode] = useState<ModalMode>('add');
   const [editing, setEditing] = useState<SavingsGoal | null>(null);

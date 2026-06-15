@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { BudgetCategory } from '../types';
 import BudgetCategoryCard from '../components/BudgetCategoryCard';
@@ -24,7 +25,8 @@ function generateId() {
 const DEFAULT_FORM = { name: '', monthlyLimit: '' };
 
 export default function SpendingScreen() {
-  const { data: categories, save } = useAsyncStorage<BudgetCategory[]>('budgetCategories', []);
+  const { data: categories, save, reload } = useAsyncStorage<BudgetCategory[]>('budgetCategories', []);
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<BudgetCategory | null>(null);
   const [form, setForm] = useState(DEFAULT_FORM);

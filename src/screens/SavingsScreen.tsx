@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { SavingsTracker } from '../types';
 import ProgressBar from '../components/ProgressBar';
@@ -43,7 +44,8 @@ function formatLarge(n: number): string {
 }
 
 export default function SavingsScreen() {
-  const { data: rawTracker, save } = useAsyncStorage<SavingsTracker | null>('savingsTracker', DEFAULT_TRACKER);
+  const { data: rawTracker, save, reload } = useAsyncStorage<SavingsTracker | null>('savingsTracker', DEFAULT_TRACKER);
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
   const tracker = rawTracker ?? DEFAULT_TRACKER;
 
   const [localBalance, setLocalBalance] = useState('');

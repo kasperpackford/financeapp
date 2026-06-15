@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { Subscription, Bill, BudgetCategory, SavingsGoal, Paycheck, AppSettings } from '../types';
 import { colors, spacing, radius, fontSize } from '../theme';
@@ -92,12 +93,21 @@ interface UpcomingPayment {
 }
 
 export default function DashboardScreen({ navigation }: { navigation: { navigate: (s: string) => void } }) {
-  const { data: paychecks, save: savePaychecks } = useAsyncStorage<Paycheck[]>('paychecks', []);
-  const { data: subscriptions } = useAsyncStorage<Subscription[]>('subscriptions', []);
-  const { data: bills } = useAsyncStorage<Bill[]>('bills', []);
-  const { data: budgetCategories } = useAsyncStorage<BudgetCategory[]>('budgetCategories', []);
-  const { data: savingsGoals } = useAsyncStorage<SavingsGoal[]>('savingsGoals', []);
-  const { data: settings } = useAsyncStorage<AppSettings>('appSettings', DEFAULT_SETTINGS);
+  const { data: paychecks, save: savePaychecks, reload: reloadPaychecks } = useAsyncStorage<Paycheck[]>('paychecks', []);
+  const { data: subscriptions, reload: reloadSubscriptions } = useAsyncStorage<Subscription[]>('subscriptions', []);
+  const { data: bills, reload: reloadBills } = useAsyncStorage<Bill[]>('bills', []);
+  const { data: budgetCategories, reload: reloadCategories } = useAsyncStorage<BudgetCategory[]>('budgetCategories', []);
+  const { data: savingsGoals, reload: reloadGoals } = useAsyncStorage<SavingsGoal[]>('savingsGoals', []);
+  const { data: settings, reload: reloadSettings } = useAsyncStorage<AppSettings>('appSettings', DEFAULT_SETTINGS);
+
+  useFocusEffect(useCallback(() => {
+    reloadPaychecks();
+    reloadSubscriptions();
+    reloadBills();
+    reloadCategories();
+    reloadGoals();
+    reloadSettings();
+  }, [reloadPaychecks, reloadSubscriptions, reloadBills, reloadCategories, reloadGoals, reloadSettings]));
 
   const [logModalVisible, setLogModalVisible] = useState(false);
   const [logExpanded, setLogExpanded] = useState(false);

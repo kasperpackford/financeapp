@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { Bill } from '../types';
 import BillCard from '../components/BillCard';
@@ -46,7 +47,8 @@ function billsDueThisMonth(bills: Bill[]): number {
 }
 
 export default function BillsScreen() {
-  const { data: bills, save } = useAsyncStorage<Bill[]>('bills', []);
+  const { data: bills, save, reload } = useAsyncStorage<Bill[]>('bills', []);
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Bill | null>(null);
   const [form, setForm] = useState(DEFAULT_FORM);

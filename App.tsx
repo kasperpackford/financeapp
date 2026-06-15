@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,21 @@ import SettingsScreen from './src/screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
+// Override React Navigation's DarkTheme with our exact brand colors so
+// the screen background, card (tab bar / header), and borders all match.
+const NAV_THEME = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: colors.bg,        // #0f0f0f — eliminates white flash behind screens
+    card: colors.surface,         // #1a1a1a — tab bar & header background
+    text: colors.text,            // #f0f0f0
+    border: colors.border,        // #2a2a2a
+    notification: colors.primary, // #4f8ef7
+    primary: colors.primary,
+  },
+};
+
 const TAB_ICONS: Record<string, string> = {
   Dashboard: '◈',
   Subscriptions: '↻',
@@ -30,7 +45,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     <Text
       style={{
         fontSize: 22,
-        lineHeight: 26,
+        lineHeight: 24,
         color: focused ? colors.primary : colors.textDim,
       }}
     >
@@ -39,12 +54,15 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   );
 }
 
-// Extracted so it can call useSafeAreaInsets (must be inside SafeAreaProvider)
+// Extracted so it can call useSafeAreaInsets (must be inside SafeAreaProvider).
 function AppNavigator() {
   const insets = useSafeAreaInsets();
-  // On devices with a home indicator (iPhone X+) the bottom inset is ~34pt.
-  // Add 10pt of breathing room above the indicator; fall back to 12pt on flat-bottom devices.
-  const tabBarPaddingBottom = insets.bottom > 0 ? insets.bottom + 10 : 12;
+  // We set an explicit tab bar height so the icon+label content always has
+  // exactly 40pt of space regardless of the safe-area inset.
+  //   60pt base  =  10 (paddingTop) + 40 (icon 22 + gap 2 + label 14 + 2 buffer)
+  //   + insets.bottom  (home indicator — 34pt on modern iPhones, 0 on flat-bottom)
+  const tabBarHeight = 60 + insets.bottom;
+  const tabBarPaddingBottom = 10 + insets.bottom;
 
   return (
     <Tab.Navigator
@@ -54,6 +72,7 @@ function AppNavigator() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          height: tabBarHeight,
           paddingTop: 10,
           paddingBottom: tabBarPaddingBottom,
         },
@@ -126,7 +145,7 @@ export default function App() {
     <SafeAreaProvider>
       <View style={styles.bg}>
         <View style={styles.frame}>
-          <NavigationContainer>
+          <NavigationContainer theme={NAV_THEME}>
             <StatusBar style="light" />
             <AppNavigator />
           </NavigationContainer>
