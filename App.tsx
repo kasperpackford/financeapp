@@ -1,9 +1,9 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Platform, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from './src/theme';
 import DashboardScreen from './src/screens/DashboardScreen';
@@ -16,17 +16,15 @@ import SettingsScreen from './src/screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
-// Override React Navigation's DarkTheme with our exact brand colors so
-// the screen background, card (tab bar / header), and borders all match.
 const NAV_THEME = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: colors.bg,        // #0f0f0f — eliminates white flash behind screens
-    card: colors.surface,         // #1a1a1a — tab bar & header background
-    text: colors.text,            // #f0f0f0
-    border: colors.border,        // #2a2a2a
-    notification: colors.primary, // #4f8ef7
+    background: colors.bg,
+    card: colors.surface,
+    text: colors.text,
+    border: colors.border,
+    notification: colors.primary,
     primary: colors.primary,
   },
 };
@@ -40,91 +38,64 @@ const TAB_ICONS: Record<string, string> = {
   Savings: '⬡',
 };
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+const HIDDEN_TABS = new Set(['Settings']);
+
+function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+
+  const visibleRoutes = state.routes.filter((r) => !HIDDEN_TABS.has(r.name));
+
   return (
-    <Text
-      style={{
-        fontSize: 22,
-        lineHeight: 24,
-        color: focused ? colors.primary : colors.textDim,
-      }}
-    >
-      {TAB_ICONS[label] ?? '·'}
-    </Text>
+    <View style={[styles.tabBar, { paddingBottom: insets.bottom }]}>
+      {visibleRoutes.map((route) => {
+        const isFocused = state.routes[state.index]?.key === route.key;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            style={styles.tabItem}
+            activeOpacity={0.65}
+          >
+            <View style={[styles.iconWrap, isFocused && styles.iconWrapActive]}>
+              <Text style={[styles.tabIcon, isFocused && styles.tabIconActive]}>
+                {TAB_ICONS[route.name] ?? '·'}
+              </Text>
+            </View>
+            <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
+              {route.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   );
 }
 
 function AppNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          paddingTop: 6,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 2,
-        },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textDim,
-      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Dashboard" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="Subscriptions"
-        component={SubscriptionsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Subscriptions" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="Bills"
-        component={BillsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Bills" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="Spending"
-        component={SpendingScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Spending" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="Goals"
-        component={GoalsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Goals" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="Savings"
-        component={SavingsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Savings" focused={focused} />,
-        }}
-      />
-      {/* Hidden from tab bar — navigated to via gear icon on Dashboard */}
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarButton: () => null,
-          tabBarStyle: { display: 'none' },
-        }}
-      />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Subscriptions" component={SubscriptionsScreen} />
+      <Tab.Screen name="Bills" component={BillsScreen} />
+      <Tab.Screen name="Spending" component={SpendingScreen} />
+      <Tab.Screen name="Goals" component={GoalsScreen} />
+      <Tab.Screen name="Savings" component={SavingsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
@@ -157,5 +128,47 @@ const styles = StyleSheet.create({
       web: { maxWidth: 480, overflow: 'hidden' },
       default: {},
     }),
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 8,
+    paddingHorizontal: 8,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 4,
+  },
+  iconWrap: {
+    width: 40,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  iconWrapActive: {
+    backgroundColor: colors.primaryDim,
+  },
+  tabIcon: {
+    fontSize: 20,
+    lineHeight: 22,
+    color: colors.textDim,
+  },
+  tabIconActive: {
+    color: colors.primary,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textDim,
+    letterSpacing: 0.2,
+  },
+  tabLabelActive: {
+    color: colors.primary,
   },
 });
