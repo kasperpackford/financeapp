@@ -43,7 +43,8 @@ function formatLarge(n: number): string {
 }
 
 export default function SavingsScreen() {
-  const { data: tracker, save } = useAsyncStorage<SavingsTracker>('savingsTracker', DEFAULT_TRACKER);
+  const { data: rawTracker, save } = useAsyncStorage<SavingsTracker | null>('savingsTracker', DEFAULT_TRACKER);
+  const tracker = rawTracker ?? DEFAULT_TRACKER;
 
   const [localBalance, setLocalBalance] = useState('');
   const [localContrib, setLocalContrib] = useState('');
